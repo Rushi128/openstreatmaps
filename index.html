@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Get Directions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        #map {
+            height: 400px;
+            width: 80%;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            width: 80%;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Get Directions</h1>
+    <input type="text" id="destinationInput" placeholder="Enter your destination">
+    <div id="map"></div>
+    <button onclick="getDirections()">Get Directions</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+
+    <script>
+        var map = L.map('map').setView([18.234495538526822, 75.68806044166344], 8); // Default coordinates
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
+
+        function getDirections() {
+            var destinationInput = document.getElementById("destinationInput").value;
+
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var userLat = position.coords.latitude;
+                    var userLon = position.coords.longitude;
+                    
+                    // Use a geocoding service to convert the entered location into coordinates
+                    var geocodingUrl = "https://nominatim.openstreetmap.org/search?format=json&q=" + encodeURI(destinationInput);
+
+                    fetch(geocodingUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.length > 0) {
+                            var selectedCoords = [data[0].lat, data[0].lon];
+                            var url = "https://www.openstreetmap.org/directions?engine=osrm_car&route=" + userLat + "%2C" + userLon + "%3B" + selectedCoords[0] + "%2C" + selectedCoords[1];
+                            window.location.href = url;
+                        } else {
+                            alert("Destination not found");
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert("Error getting destination coordinates");
+                    });
+                });
+            } else {
+                alert("Geolocation is not supported by your browser");
+            }
+        }
+    </script>
+</body>
+</html>
